@@ -1,5 +1,6 @@
 import sys
 import os
+from pathlib import Path
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
@@ -190,9 +191,9 @@ def seed_database():
         admin_user = db.query(User).filter(User.email == "admin@hotelsys.com").first()
         if not admin_user:
             admin_user = User(
-                email="admin@hotelsys.com",
+                email=" ",
                 password_hash=hash_password("admin123"),
-                name="System Administrator",
+                name="System Administra`to`r",
                 phone="+852 1234 5678",
                 role=UserRole.staff
             )
@@ -213,4 +214,12 @@ def seed_database():
 
 
 if __name__ == "__main__":
+    # HACK: please find a more proper way to do this, ideally within sqlalchemy itself.
+    # create a database file first if it doens't exist
+    db_path = Path("./database/hotelsys.db")
+    if not db_path.exists():
+        if not db_path.parent.exists():
+            db_path.parent.mkdir(parents=True)
+        db_path.touch()
+
     seed_database()

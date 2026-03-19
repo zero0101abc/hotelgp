@@ -40,11 +40,11 @@ export default defineConfig({
       'api.zero1010abc.me'
     ],
     proxy: {
-      '/auth': 'http://localhost:7999',
-      '/users': 'http://localhost:7999',
-      '/rooms': 'http://localhost:7999',
-      '/bookings': 'http://localhost:7999',
-      '/amenities': 'http://localhost:7999',
+      '/auth': 'http://localhost:8000',
+      '/users': 'http://localhost:8000',
+      '/rooms': 'http://localhost:8000',
+      '/bookings': 'http://localhost:8000',
+      '/amenities': 'http://localhost:8000',
     }
   }
 })
