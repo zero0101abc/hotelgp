@@ -31,7 +31,24 @@ export default function App() {
 
   useEffect(() => {
     fetchRooms();
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const data = await api.checkAuth();
+      if ((data as any).authenticated) {
+        const userData = await api.getMe();
+        setUser({
+          ...userData,
+          name: (userData as any).name || 'User',
+          email: (userData as any).email
+        });
+      }
+    } catch (error) {
+      console.log('Not authenticated');
+    }
+  };
 
   const fetchRooms = async () => {
     try {

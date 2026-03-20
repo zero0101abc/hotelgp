@@ -1,37 +1,15 @@
-const API_BASE = '';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:7999';
 
 class ApiService {
-  private token: string | null = null;
-
-  setToken(token: string | null) {
-    this.token = token;
-    if (token) {
-      localStorage.setItem('token', token);
-    } else {
-      localStorage.removeItem('token');
-    }
-  }
-
-  getToken() {
-    if (!this.token) {
-      this.token = localStorage.getItem('token');
-    }
-    return this.token;
-  }
-
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers,
     };
 
-    const token = this.getToken();
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
+      credentials: 'include',
       headers,
     });
 
@@ -40,17 +18,18 @@ class ApiService {
       throw new Error(error.detail || 'Request failed');
     }
 
+    if (response.status === 204) {
+      return {} as T;
+    }
+
     return response.json();
   }
 
-  // Auth
   async login(email: string, password: string) {
-    const data = await this.request<{ access_token: string; refresh_token: string }>('/auth/login', {
+    return this.request<{ message: string; user: any }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    this.setToken(data.access_token);
-    return data;
   }
 
   async register(email: string, password: string, name: string, phone?: string) {
@@ -61,15 +40,17 @@ class ApiService {
   }
 
   async logout() {
-    await this.request('/auth/logout', { method: 'POST' });
-    this.setToken(null);
+    return this.request('/auth/logout', { method: 'POST' });
   }
 
   async getMe() {
-    return this.request('/users/me');
+    return this.request('/auth/me');
   }
 
-  // Rooms
+  async checkAuth() {
+    return this.request<{ authenticated: boolean; user?: any }>('/auth/check');
+  }
+
   async getRooms(filters?: { type?: string; status?: string; featured?: boolean; children?: number }) {
     const params = new URLSearchParams();
     if (filters?.type) params.append('type', filters.type);
@@ -93,7 +74,6 @@ class ApiService {
     return this.request(`/rooms/${roomId}/reviews`);
   }
 
-  // Bookings
   async getBookings() {
     return this.request('/bookings');
   }
@@ -127,7 +107,6 @@ class ApiService {
     });
   }
 
-  // Amenities
   async getAmenities() {
     return this.request('/amenities');
   }

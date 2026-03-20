@@ -1,93 +1,47 @@
 from typing import Optional
-from datetime import datetime
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, status, Request as FastAPIRequest
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User, UserRole
-from app.utils.auth import decode_token
+from app.session import get_current_session
 
-security = HTTPBearer()
-
-
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+def get_current_user_from_session(
+    request: FastAPIRequest,
     db: Session = Depends(get_db)
 ) -> User:
-    token = credentials.credentials
-    payload = decode_token(token)
-
-    if not payload or payload.get("type") != "access":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
-        )
-
-    user_id: int = payload.get("sub")
+    session_data = get_current_session(request)
+    user_id = session_data.get('user_id')
+    
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload"
+            detail="Not authenticated"
         )
-
+    
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found"
         )
-
+    
     return user
 
 
-def get_current_staff(
-    current_user: User = Depends(get_current_user)
+def get_current_user(
+    db: Session = Depends(get_db),
+    request: FastAPIRequest = None
 ) -> User:
-    if current_user.role != UserRole.staff:
+    return get_current_user_from_session(request, db)
+
+
+def get_current_staff(
+    current_user: User = Depends(get_current_user_from_session)
+) -> User:
+    role_value = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+    if role_value != 'staff':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
         )
     return current_user
-
-
-def verify_refresh_token(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
-) -> User:
-    token = credentials.credentials
-    payload = decode_token(token)
-
-    if not payload or payload.get("type") != "refresh":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
-        )
-
-    user_id: int = payload.get("sub")
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload"
-        )
-
-    from app.models.token import RefreshToken
-    stored_token = db.query(RefreshToken).filter(
-        RefreshToken.token == token,
-        RefreshToken.expires_at > datetime.utcnow()
-    ).first()
-
-    if not stored_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token not found or expired"
-        )
-
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
-        )
-
-    return user

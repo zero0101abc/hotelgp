@@ -10,10 +10,14 @@ if sys.platform == 'win32':
 
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine, Base
-from app.models import User, Room, Amenity, Package, RoomType, RoomStatus, UserRole
+from app.models import User, Room, Amenity, Package, RoomType, RoomStatus, UserRole, room_amenities
 from app.utils.auth import hash_password
 
 def seed_database():
+    print("Creating database tables...")
+    Base.metadata.create_all(bind=engine)
+    print("Tables created successfully!")
+    
     db = SessionLocal()
     
     try:

@@ -58,6 +58,51 @@ backend/
 └── seed_db.py              # Seed script
 ```
 
+## Database Initialization
+
+This project uses a **hybrid approach** for database schema management:
+
+### Method 1: Automatic (Development)
+**SQLAlchemy `create_all()`** - Automatically creates tables on server startup.
+- Runs automatically when you start the server
+- Creates tables from `app/models/*.py` if they don't exist
+- Best for: Local development, quick setup
+
+```bash
+# Just start the server - tables are created automatically
+uvicorn app.main:app --reload
+```
+
+### Method 2: Alembic Migrations (Production)
+**Alembic** - Version-controlled schema management with rollback support.
+- Run manually when needed
+- Best for: Production, schema changes, rollbacks
+
+```bash
+# Use the migration helper script
+python run_migrations.py
+
+# Or use alembic directly
+alembic upgrade head          # Apply all migrations
+alembic downgrade -1         # Rollback one step
+alembic history              # Show migration history
+alembic current              # Show current version
+
+# Create a new migration after model changes
+alembic revision --autogenerate -m "Add new column"
+alembic upgrade head
+```
+
+### Run Migrations Script Commands
+```bash
+python run_migrations.py --upgrade   # Upgrade to latest (default)
+python run_migrations.py --downgrade # Downgrade one step
+python run_migrations.py --current  # Show current version
+python run_migrations.py --history  # Show migration history
+python run_migrations.py --check    # Check if DB is up to date
+python run_migrations.py --create "message"  # Create new migration
+```
+
 ## Setup with Docker
 
 ```bash
@@ -81,14 +126,14 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your MySQL credentials
 
-# Run migrations
+# Run server (tables auto-created on first run)
+uvicorn app.main:app --reload
+
+# OR run migrations explicitly
 alembic upgrade head
 
 # Seed database
 python seed_db.py
-
-# Run server
-uvicorn app.main:app --reload
 ```
 
 ## API Documentation
