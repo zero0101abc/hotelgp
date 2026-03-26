@@ -2,70 +2,47 @@
 
 A hotel booking and management system with React frontend and FastAPI backend.
 
-## Quick Start
+## Quick Start (One-Click)
 
-### One-Click Start (Windows)
 ```bash
 run.bat
 ```
+
 This starts both frontend and backend automatically.
 
-### Manual Start
+## Manual Setup
+
+### 1. Install Dependencies
 
 **Frontend:**
 ```bash
 npm install
-npm run dev
 ```
 
 **Backend:**
 ```bash
 cd backend
-start.bat
+pip install -r requirements.txt
 ```
 
-## Requirements
+### 2. Start Servers
 
-- Node.js 18+
-- Python 3.10+
-- MySQL 8.0
-
-## Setup
-
-### 1. Database Setup
-
-Create a MySQL database named `hotelsys`:
-
-```sql
-CREATE DATABASE hotelsys;
+**Both at once (Windows):**
+```bash
+run.bat
 ```
 
-### 2. Backend Configuration
+**Or start separately:**
 
-Create `backend/.env` file:
-
-```env
-DATABASE_URL=mysql+pymysql://root:your_password@localhost:3306/hotelsys
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
+Frontend:
+```bash
+npm run dev
 ```
 
-### 3. Backend Dependencies
-
+Backend:
 ```bash
 cd backend
-pip install -r requirements.txt
-python seed_db.py  # Optional: seed sample data
-```
-
-### 4. Frontend Configuration (Optional)
-
-Create `.env` file in project root to override API URL:
-
-```env
-VITE_API_URL=http://localhost:7999
+start.bat
 ```
 
 ## URLs
@@ -76,13 +53,24 @@ VITE_API_URL=http://localhost:7999
 | Backend API | http://localhost:7999 |
 | API Docs | http://localhost:7999/docs |
 
-## Default Admin Login
+## Optional: Seed Sample Data
 
+```bash
+cd backend
+python seed_db.py
+```
+
+**Default Admin Login:**
 - Email: `admin@hotelsys.com`
 - Password: `admin123`
+
+## Requirements
+
+- Node.js 18+
+- Python 3.10+
 
 ## Tech Stack
 
 - **Frontend:** React, Vite, Tailwind CSS, Radix UI
-- **Backend:** FastAPI, SQLAlchemy, MySQL
+- **Backend:** FastAPI, SQLAlchemy, SQLite
 - **Auth:** JWT (access + refresh tokens)

@@ -1,0 +1,27 @@
+STEPS TO SETUP AND RUN HOTELSYS
+================================
+
+1. CHANGE API URL (src/app/services/api.ts)
+   - Line 1: const API_BASE = 'http://localhost:7999';
+   - This connects frontend to backend
+
+2. UPDATE BACKEND PORT (backend/start.bat)
+   - Line 33: echo http://localhost:7999/docs
+   - Line 34: echo http://localhost:7999/health
+   - Line 39: uvicorn app.main:app --reload --host 0.0.0.0 --port 7999
+
+3. CREATE run.bat (in project root)
+   - Starts both frontend and backend with one click
+
+4. SEED DATABASE
+   - cd backend
+   - .\venv\Scripts\python.exe seed_db.py
+
+5. TO RUN:
+   Frontend: npm run dev
+   Backend: cd backend && start.bat
+   Or use: run.bat
+
+6. PORTS:
+   - Frontend: http://localhost:5174
+   - Backend: http://localhost:7999
